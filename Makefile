@@ -4,4 +4,5 @@ build:
 run: build
 	./bin/exchange
 
-test: go test -v ./...
+test: 
+	go test -v ./...
