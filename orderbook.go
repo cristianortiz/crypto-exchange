@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -41,10 +40,35 @@ func NewOrderBook() *Orderbook {
 }
 
 func (ob *Orderbook) PlaceOrder(price float64, o *Order) []Match {
+	//1. try to match the orders, implementing matching logic to determine if the size of the order was fullfilment
 
+	//2. add the rest of the order size (if it was not completed) to the books
+	if o.Size > 0.0 {
+		ob.add(price, o)
+
+	}
+	return []Match{}
 }
-
 func (ob *Orderbook) add(price float64, o *Order) {
+
+	var limit *Limit
+	if o.Bid {
+		limit = ob.BidsLimits[price]
+	} else {
+		limit = ob.AsksLimits[price]
+	}
+	if limit == nil {
+		limit = NewLimit(price)
+		limit.AddOrder(o)
+
+		if o.Bid {
+			ob.Bids = append(ob.Bids, limit)
+			ob.BidsLimits[price] = limit
+		} else {
+			ob.Asks = append(ob.Asks, limit)
+			ob.AsksLimits[price] = limit
+		}
+	}
 
 }
 func NewLimit(price float64) *Limit {
@@ -61,9 +85,14 @@ func NewOrder(bid bool, size float64) *Order {
 		Timestamp: time.Now().UnixNano(),
 	}
 }
-func (o *Order) String() string {
-	return fmt.Sprintf("[size]: %.2f", o.Size)
-}
+
+// func (o *Order) String() string {
+// 	return fmt.Sprintf("[size]: %.2f", o.Size)
+// }
+
+//	func (l *Limit) String() string {
+//		return fmt.Sprintf("[price: %.2f | volume: %.2f]", l.Price, l.TotalVolume)
+//	}
 func (l *Limit) AddOrder(o *Order) {
 	o.Limit = l
 	l.Orders = append(l.Orders, o)
